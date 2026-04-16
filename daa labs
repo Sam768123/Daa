@@ -1,0 +1,251 @@
+# 1. Fibonacci (Recursion)
+
+def fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
+
+n = int(input("Enter number: "))
+for i in range(n):
+    print(fibonacci(i), end=" ")
+print()
+
+# 2. Heap Sort
+
+def heapify(arr, n, i):
+    largest = i
+    left = 2*i + 1
+    right = 2*i + 2
+
+    if left < n and arr[left] > arr[largest]:
+        largest = left
+
+    if right < n and arr[right] > arr[largest]:
+        largest = right
+
+    if largest != i:
+        arr[i], arr[largest] = arr[largest], arr[i]
+        heapify(arr, n, largest)
+
+def heap_sort(arr):
+    n = len(arr)
+
+    for i in range(n//2 - 1, -1, -1):
+        heapify(arr, n, i)
+
+    for i in range(n-1, 0, -1):
+        arr[i], arr[0] = arr[0], arr[i]
+        heapify(arr, i, 0)
+
+arr = list(map(int, input("Enter elements: ").split()))
+heap_sort(arr)
+print("Sorted:", arr)
+
+# 3. Binary Search (Recursive + Iterative)
+
+def binary_search_rec(arr, low, high, key):
+    if low <= high:
+        mid = (low + high)//2
+        if arr[mid] == key:
+            return mid
+        elif arr[mid] > key:
+            return binary_search_rec(arr, low, mid-1, key)
+        else:
+            return binary_search_rec(arr, mid+1, high, key)
+    return -1
+
+def binary_search_itr(arr, key):
+    low, high = 0, len(arr)-1
+    while low <= high:
+        mid = (low + high)//2
+        if arr[mid] == key:
+            return mid
+        elif arr[mid] > key:
+            high = mid - 1
+        else:
+            low = mid + 1
+    return -1
+
+arr = sorted(list(map(int, input("Enter sorted array: ").split())))
+key = int(input("Enter key: "))
+print("Recursive:", binary_search_rec(arr, 0, len(arr)-1, key))
+print("Iterative:", binary_search_itr(arr, key))
+
+# 4. Quick Sort
+
+def partition(arr, low, high):
+    pivot = arr[high]
+    i = low - 1
+    for j in range(low, high):
+        if arr[j] < pivot:
+            i += 1
+            arr[i], arr[j] = arr[j], arr[i]
+    arr[i+1], arr[high] = arr[high], arr[i+1]
+    return i+1
+
+def quick_sort(arr, low, high):
+    if low < high:
+        pi = partition(arr, low, high)
+        quick_sort(arr, low, pi-1)
+        quick_sort(arr, pi+1, high)
+
+arr = list(map(int, input("Enter elements: ").split()))
+quick_sort(arr, 0, len(arr)-1)
+print("Sorted:", arr)
+
+# 5 Job Sequencing (Reduced Version)
+
+def job_sequencing(jobs):
+    # Sort by profit (descending)
+    jobs.sort(key=lambda x: x[2], reverse=True)
+
+    n = len(jobs)
+    slots = [False] * n
+    result = [''] * n
+    total_profit = 0
+
+    for job_id, deadline, profit in jobs:
+        for j in range(min(n, deadline) - 1, -1, -1):
+            if not slots[j]:
+                slots[j] = True
+                result[j] = job_id
+                total_profit += profit
+                break
+
+    print("Selected Jobs:", end=" ")
+    for job in result:
+        if job:
+            print(job, end=" ")
+    print("\nTotal Profit:", total_profit)
+
+
+# Hardcoded jobs: (id, deadline, profit)
+jobs = [
+    ('A', 2, 100),
+    ('B', 1, 19),
+    ('C', 2, 27),
+    ('D', 1, 25),
+    ('E', 3, 15)
+]
+
+job_sequencing(jobs)
+
+# 6. Knapsack (Greedy - No User Input)
+
+def knapsack(items, capacity):
+    items.sort(key=lambda x: x[1]/x[0], reverse=True)
+    total_profit = 0
+
+    for weight, profit in items:
+        if capacity >= weight:
+            capacity -= weight
+            total_profit += profit
+        else:
+            total_profit += profit * (capacity / weight)
+            break
+
+    print("Max Profit:", total_profit)
+
+
+# Hardcoded items: (weight, profit)
+items = [
+    (10, 60),
+    (20, 100),
+    (30, 120)
+]
+
+capacity = 50
+
+knapsack(items, capacity)
+
+
+#7 Bellman ford
+def bellman_ford(graph, V, E, src):
+    # Step 1: Initialize distances from src to all other vertices as infinite
+    # and distance to src itself as 0
+    dist = [float("Inf")] * V
+    dist[src] = 0
+
+    # Step 2: Relax all edges |V| - 1 times.
+    # A simple shortest path from src to any other vertex can have
+    # at most |V| - 1 edges
+    for _ in range(V - 1):
+        for u, v, w in graph:
+            if dist[u] != float("Inf") and dist[u] + w < dist[v]:
+                dist[v] = dist[u] + w
+
+    # Step 3: Check for negative-weight cycles.
+    # If we get a shorter path, then there is a cycle.
+    for u, v, w in graph:
+        if dist[u] != float("Inf") and dist[u] + w < dist[v]:
+            print("Graph contains negative weight cycle")
+            return
+
+    print_solution(dist)
+
+def print_solution(dist):
+    print("Vertex Distance from Source")
+    for i in range(len(dist)):
+        print(f"{i}\t\t{dist[i]}")
+
+# Example Usage:
+# (u, v, w) represents an edge from u to v with weight w
+edges = [
+    (0, 1, -1), (0, 2, 4), (1, 2, 3),
+    (1, 3, 2), (1, 4, 2), (3, 2, 5),
+    (3, 1, 1), (4, 3, -3)
+]
+
+bellman_ford(edges, 5, 8, 0)
+
+#8 Nqueeens
+
+def is_safe(board, row, col, n):
+    # Check same column
+    for i in range(row):
+        if board[i][col] == 1:
+            return False
+
+    # Check left diagonal
+    i, j = row-1, col-1
+    while i >= 0 and j >= 0:
+        if board[i][j] == 1:
+            return False
+        i -= 1
+        j -= 1
+
+    # Check right diagonal
+    i, j = row-1, col+1
+    while i >= 0 and j < n:
+        if board[i][j] == 1:
+            return False
+        i -= 1
+        j += 1
+
+    return True
+
+
+def solve_n_queens(board, row, n):
+    # Base case: all queens placed
+    if row == n:
+        for r in board:
+            print(r)
+        print()
+        return
+
+    # Try placing queen in each column
+    for col in range(n):
+        if is_safe(board, row, col, n):
+            board[row][col] = 1   # Place queen
+
+            solve_n_queens(board, row + 1, n)
+
+            board[row][col] = 0   # Backtrack
+
+
+# Driver code
+n = 4
+board = [[0 for _ in range(n)] for _ in range(n)]
+
+solve_n_queens(board, 0, n)
+
